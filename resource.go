@@ -26,6 +26,7 @@ func init() {
 		"network_interface.0.access_config.0.nat_ip",          // GCE
 		"network_interface.0.access_config.0.assigned_nat_ip", // GCE
 		"network_interface.0.address",                         // GCE
+		"private_ip_address",																	 // CLC
 	}
 
 	// type.name.0
@@ -77,6 +78,10 @@ func NewResource(keyName string, state resourceState) (*Resource, error) {
 		baseName:     m[2],
 		counter:      c,
 	}, nil
+}
+
+func (r Resource) Name() string {
+	return r.Attributes()["id"]
 }
 
 func (r Resource) IsSupported() bool {

@@ -6,27 +6,39 @@ import (
 	"io"
 )
 
-func cmdList(stdout io.Writer, stderr io.Writer, s *state) int {
-	groups := make(map[string][]string, 0)
-	for _, res := range s.resources() {
-		for _, grp := range res.Groups() {
+type meta struct {
+	HostVars	map[string]map[string]string	`json:"hostvars"`
+}
 
-			_, ok := groups[grp]
-			if !ok {
-				groups[grp] = []string{}
+func cmdList(stdout io.Writer, stderr io.Writer, states []*state) int {
+	metaMap   := make(map[string]map[string]string, 0)
+	groups    := make(map[string]interface{}, 0)
+
+	for _, state := range states {
+		for _, res := range state.resources() {
+			for _, grp := range res.Groups() {
+
+				_, ok := groups[grp]
+				if !ok {
+					groups[grp] = make(map[string][]string)
+				}
+				groups[grp].(map[string][]string)["hosts"] = append(groups[grp].(map[string][]string)["hosts"], res.Name())
 			}
-
-			groups[grp] = append(groups[grp], res.Address())
+			metaMap[res.Name()] = res.Attributes()
 		}
 	}
+	metaData := meta{HostVars: metaMap}
+	groups["_meta"] = metaData
 
 	return output(stdout, stderr, groups)
 }
 
-func cmdHost(stdout io.Writer, stderr io.Writer, s *state, hostname string) int {
-	for _, res := range s.resources() {
-		if hostname == res.Address() {
-			return output(stdout, stderr, res.Attributes())
+func cmdHost(stdout io.Writer, stderr io.Writer, states []*state, hostname string) int {
+	for _, state := range states {
+		for _, res := range state.resources() {
+			if hostname == res.Name() {
+				return output(stdout, stderr, res.Attributes())
+			}
 		}
 	}
 

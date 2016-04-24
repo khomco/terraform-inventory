@@ -31,7 +31,7 @@ func (s *state) read(stateFile io.Reader) error {
 
 // resources returns a slice of the Resources found in the statefile.
 func (s *state) resources() []*Resource {
-	inst := make([]*Resource, 0)
+	var inst []*Resource
 
 	for _, m := range s.Modules {
 		for _, k := range m.resourceKeys() {
@@ -67,7 +67,7 @@ func (ms *moduleState) resourceKeys() []string {
 
 	for k := range ms.ResourceStates {
 		keys[i] = k
-		i += 1
+		i++
 	}
 
 	sort.Strings(keys)
