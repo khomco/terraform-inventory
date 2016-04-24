@@ -93,7 +93,6 @@ func (r Resource) IsSupported() bool {
 func (r Resource) Groups() []string {
 	groups := []string{
 		r.baseName,
-		r.NameWithCounter(),
 		fmt.Sprintf("type_%s", r.resourceType),
 	}
 
@@ -128,7 +127,25 @@ func (r Resource) Tags() map[string]string {
 
 // Attributes returns a map containing everything we know about this resource.
 func (r Resource) Attributes() map[string]string {
-	return r.State.Primary.Attributes
+	raw := r.State.Primary.Attributes
+
+	switch r.resourceType {
+	case "clc_server":
+		clcServer := make(map[string]string)
+		clcServer["id"] = raw["id"]
+		clcServer["cpu"] = raw["cpu"]
+		clcServer["memory_mb"] = raw["memory_mb"]
+		clcServer["name"] = raw["name"]
+		clcServer["type"] = raw["type"]
+		clcServer["storage_type"] = raw["storage_type"]
+		clcServer["ansible_ssh_host"] = raw["private_ip_address"]
+		clcServer["ansible_ssh_port"] = "22"
+		clcServer["ansible_ssh_user"] = "root"
+		clcServer["ansible_ssh_pass"] = raw["password"]
+		return clcServer
+	default:
+		return raw
+	}
 }
 
 // NameWithCounter returns the resource name with its counter. For resources
