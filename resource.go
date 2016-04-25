@@ -139,7 +139,7 @@ func (r Resource) Attributes() map[string]string {
 		clcServer["type"] = raw["type"]
 		clcServer["storage_type"] = raw["storage_type"]
 		clcServer["ansible_ssh_host"] = raw["private_ip_address"]
-		clcServer["ansible_ssh_port"] = "22"
+		clcServer["private_ip_address"] = raw["private_ip_address"]
 		clcServer["ansible_ssh_user"] = "root"
 		clcServer["ansible_ssh_pass"] = raw["password"]
 		return clcServer
