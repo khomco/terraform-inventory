@@ -96,6 +96,11 @@ func (r Resource) Groups() []string {
 		fmt.Sprintf("type_%s", r.resourceType),
 	}
 
+	switch r.resourceType {
+	case "clc_server":
+		groups = append(groups, "datacenter_" + strings.ToLower(r.Name()[:3]))
+	}
+
 	for k, v := range r.Tags() {
 		g := fmt.Sprintf("%s_%s", k, v)
 		groups = append(groups, g)
@@ -142,6 +147,7 @@ func (r Resource) Attributes() map[string]string {
 		clcServer["private_ip_address"] = raw["private_ip_address"]
 		clcServer["ansible_ssh_user"] = "root"
 		clcServer["ansible_ssh_pass"] = raw["password"]
+		clcServer["datacenter"] = strings.ToUpper(raw["id"][:3])
 		return clcServer
 	default:
 		return raw
