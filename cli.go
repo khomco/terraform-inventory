@@ -12,18 +12,18 @@ type meta struct {
 }
 
 func gatherResources(states []*state) map[string]interface{} {
-	metaData   := make(map[string]map[string]string, 0)
-	groups    := make(map[string]interface{}, 0)
+	metaData	:= make(map[string]map[string]string, 0)
+	groups		:= make(map[string]interface{}, 0)
 
 	for _, state := range states {
 		for _, res := range state.resources() {
 			for _, grp := range res.Groups() {
-
 				_, ok := groups[grp]
 				if !ok {
 					groups[grp] = make(map[string][]string)
 				}
 				groups[grp].(map[string][]string)["hosts"] = append(groups[grp].(map[string][]string)["hosts"], res.Name())
+
 			}
 			metaData[res.Name()] = res.Attributes()
 		}
@@ -78,7 +78,7 @@ func cmdInventory(stdout io.Writer, stderr io.Writer, states []*state) int {
 
 		_, err = io.WriteString(stdout, "\n")
 		if err != nil {
-			fmt.Fprintf(stderr, "Error writing Invetory: %s\n", err)
+			fmt.Fprintf(stderr, "Error writing Inventory: %s\n", err)
 			return 1
 		}
 	}
