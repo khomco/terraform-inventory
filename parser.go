@@ -29,6 +29,20 @@ func (s *state) read(stateFile io.Reader) error {
 	return nil
 }
 
+// outputs returns a slice of the Outputs found in the statefile.
+func (s *state) outputs() []*Output {
+	inst := make([]*Output, 0)
+
+	for _, m := range s.Modules {
+		for k, v := range m.Outputs {
+			o, _ := NewOutput(k, v)
+			inst = append(inst, o)
+		}
+	}
+
+	return inst
+}
+
 // resources returns a slice of the Resources found in the statefile.
 func (s *state) resources() []*Resource {
 	var inst []*Resource
@@ -55,6 +69,7 @@ func (s *state) resources() []*Resource {
 
 type moduleState struct {
 	ResourceStates map[string]resourceState `json:"resources"`
+	Outputs        map[string]string        `json:"outputs"`
 }
 
 // resourceKeys returns a sorted slice of the key names of the resources in this
