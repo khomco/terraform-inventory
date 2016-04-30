@@ -10,6 +10,7 @@ import (
 var version = flag.Bool("version", false, "print version information and exit")
 var list = flag.Bool("list", false, "list mode")
 var host = flag.String("host", "", "host mode")
+var inventory = flag.Bool("inventory", false, "inventory mode")
 
 func main() {
 	flag.Parse()
@@ -43,7 +44,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if !*list && *host == "" {
+	if !*list && *host == "" && !*inventory {
 		fmt.Fprint(os.Stderr, "Either --host or --list must be specified")
 		os.Exit(1)
 	}
@@ -74,6 +75,10 @@ func main() {
 
 	if *list {
 		os.Exit(cmdList(os.Stdout, os.Stderr, states))
+
+	} else if *inventory {
+		os.Exit(cmdInventory(os.Stdout, os.Stderr, states))
+
 	} else if *host != "" {
 		os.Exit(cmdHost(os.Stdout, os.Stderr, states, *host))
 	}

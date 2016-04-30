@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"reflect"
 )
 
 type meta struct {
@@ -26,6 +27,7 @@ func gatherResources(states []*state) map[string]interface{} {
 			}
 			metaData[res.Name()] = res.Attributes()
 		}
+
 		if len(state.outputs()) > 0 {
 			groups["all"] = make(map[string]string, 0)
 			for _, out := range state.outputs() {
@@ -35,8 +37,53 @@ func gatherResources(states []*state) map[string]interface{} {
 	}
 	groups["_meta"] = meta{HostVars: metaData}
 
-
 	return groups
+}
+
+func cmdInventory(stdout io.Writer, stderr io.Writer, states []*state) int {
+	groups := gatherResources(states)
+	for group, res := range groups {
+		// ignore _meta data
+		if group == "_meta" {
+			continue
+		}
+		_, err := io.WriteString(stdout, "["+group+"]\n")
+		if err != nil {
+			fmt.Fprintf(stderr, "Error writing Inventory: %s\n", err)
+			return 1
+		}
+
+		groupvalue := reflect.ValueOf(res)
+		for _, key := range groupvalue.MapKeys() {
+			value := groupvalue.MapIndex(key)
+			if value.Kind() == reflect.Slice {
+				for _, ress := range res.(map[string][]string) {
+					for _, host := range ress {
+						_, err := io.WriteString(stdout, host+"\n")
+						if err != nil {
+							fmt.Fprintf(stderr, "Error writing Inventory: %s\n", err)
+							return 1
+						}
+					}
+				}
+
+			} else if value.Kind() == reflect.String {
+				_, err := io.WriteString(stdout, res.(map[string]string)[key.Interface().(string)]+"\n")
+				if err != nil {
+					fmt.Fprintf(stderr, "Error writing Inventory: %s\n", err)
+					return 1
+				}
+			}
+		}
+
+		_, err = io.WriteString(stdout, "\n")
+		if err != nil {
+			fmt.Fprintf(stderr, "Error writing Invetory: %s\n", err)
+			return 1
+		}
+	}
+
+	return 0
 }
 
 func cmdList(stdout io.Writer, stderr io.Writer, states []*state) int {
